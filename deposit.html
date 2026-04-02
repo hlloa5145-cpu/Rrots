@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إيداع - Rolex</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>body{background:#0d0221;color:white;font-family:sans-serif;}</style>
+</head>
+<body class="p-6">
+    <a href="index.html" class="text-gray-500 text-sm mb-10 block">← العودة للرئيسية</a>
+    <h1 class="text-2xl font-black mb-6">إيداع USDT (TRC20)</h1>
+    <div class="bg-[#1a0b3c] p-6 rounded-3xl mb-6 border border-white/5 shadow-xl">
+        <p class="text-[10px] text-gray-500 mb-2 uppercase">عنوان المحفظة الخاص بنا</p>
+        <p class="text-sm font-mono text-purple-400 break-all select-all">TExxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
+    </div>
+    <div class="bg-[#1a0b3c] p-6 rounded-3xl border border-white/5">
+        <input type="number" id="amt" placeholder="أدخل المبلغ الذي حولته ($)" class="w-full p-4 bg-[#0d0221] rounded-2xl mb-4 border border-white/5 outline-none focus:border-green-500">
+        <button id="depBtn" class="w-full bg-green-600 p-5 rounded-2xl font-black shadow-lg shadow-green-900/20 active:scale-95 transition-transform">تأكيد الإرسال ✅</button>
+    </div>
+    <script>
+        const supabaseClient = supabase.createClient('https://ddjpdiatyrgcdcjbvptn.supabase.co', 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkanBkaWF0eXJnZGNqYnZwdHluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMTkwNzEsImV4cCI6MjA5MDY5NTA3MX0.YVdo6jmzyp3_AKEVD2L4RCqPr0AfDI6-mwkX0hhVKbg');
+        document.getElementById('depBtn').onclick = async () => {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            const amount = document.getElementById('amt').value;
+            if(!amount || amount <= 0) return alert("أدخل مبلغ صحيح");
+            const { error } = await supabaseClient.from('transactions').insert([{ user_id: user.id, amount: parseFloat(amount), type: 'deposit', status: 'pending' }]);
+            if(!error) { alert("تم إرسال الطلب بنجاح، سيتم التأكد من التحويل قريباً"); window.location.href = 'index.html'; }
+        };
+    </script>
+</body>
+</html>
