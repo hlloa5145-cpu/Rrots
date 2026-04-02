@@ -1,28 +1,26 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دخول - Rolex</title>
+    <meta charset="UTF-8"><title>دخول - Rolex</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>body{background:#0d0221;color:white;font-family:sans-serif;}</style>
 </head>
 <body class="flex flex-col justify-center min-h-screen p-6">
     <div class="max-w-md mx-auto w-full bg-[#1a0b3c]/50 p-8 rounded-[2rem] border border-purple-500/10 shadow-2xl">
-        <h1 class="text-4xl font-black text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-500 italic">ROLEX</h1>
+        <h1 class="text-3xl font-black text-center mb-10 text-indigo-500 italic">ROLEX</h1>
         <form id="loginForm" class="space-y-4">
-            <input type="email" id="email" placeholder="البريد الإلكتروني" class="w-full p-4 bg-[#0d0221] rounded-2xl border border-white/5 outline-none focus:border-purple-500" required>
-            <input type="password" id="password" placeholder="كلمة المرور" class="w-full p-4 bg-[#0d0221] rounded-2xl border border-white/5 outline-none focus:border-purple-500" required>
-            <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 p-5 rounded-2xl font-black shadow-xl active:scale-95 transition-transform">دخول آمن 🔒</button>
+            <input type="email" id="email" placeholder="البريد الإلكتروني" class="w-full p-4 bg-[#0d0221] rounded-2xl border border-white/5 outline-none focus:border-indigo-500" required>
+            <input type="password" id="password" placeholder="كلمة المرور" class="w-full p-4 bg-[#0d0221] rounded-2xl border border-white/5 outline-none focus:border-indigo-500" required>
+            <button type="submit" class="w-full bg-indigo-600 p-5 rounded-2xl font-black shadow-xl mt-4">دخول آمن 🔓</button>
         </form>
-        <p class="text-center mt-6 text-gray-500 text-sm">ليس لديك حساب؟ <a href="register.html" class="text-purple-400 font-bold underline">سجل هنا</a></p>
     </div>
     <script>
         const supabaseClient = supabase.createClient('https://ddjpdiatyrgcdcjbvptn.supabase.co', 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkanBkaWF0eXJnZGNqYnZwdHluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMTkwNzEsImV4cCI6MjA5MDY5NTA3MX0.YVdo6jmzyp3_AKEVD2L4RCqPr0AfDI6-mwkX0hhVKbg');
         document.getElementById('loginForm').onsubmit = async (e) => {
             e.preventDefault();
             const { error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('email').value, password: document.getElementById('password').value });
-            if (error) alert("خطأ: " + error.message);
+            if (error) alert(error.message);
             else window.location.href = 'index.html';
         };
     </script>
