@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"><title>المدير - Rolex</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>body{background:#050110;color:white;}</style>
+</head>
+<body class="p-6">
+    <h1 class="text-2xl font-black mb-8 text-yellow-500 italic">طلبات الإيداع المعلقة ⏳</h1>
+    <div id="list" class="space-y-4"></div>
+    <script>
+        const supabaseClient = supabase.createClient('https://ddjpdiatyrgcdcjbvptn.supabase.co', 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkanBkaWF0eXJnZGNqYnZwdHluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMTkwNzEsImV4cCI6MjA5MDY5NTA3MX0.YVdo6jmzyp3_AKEVD2L4RCqPr0AfDI6-mwkX0hhVKbg');
+        async function fetchD() {
+            const { data } = await supabaseClient.from('transactions').select('*, profiles(email)').eq('status', 'pending').eq('type', 'deposit');
+            const container = document.getElementById('list'); container.innerHTML = '';
+            data.forEach(item => {
+                container.innerHTML += `<div class="bg-[#1a0b3c] p-6 rounded-3xl flex justify-between items-center shadow-lg border border-white/5">
+                    <div><p class="text-2xl font-black text-green-400">$${item.amount}</p><p class="text-[10px] text-gray-500">${item.profiles.email}</p></div>
+                    <button onclick="approve('${item.id}', '${item.user_id}', ${item.amount})" class="bg-green-600 px-6 py-2 rounded-xl font-bold">تأكيد ✅</button>
+                </div>`;
+            });
+        }
+        async function approve(id, uid, amt) {
+            await supabaseClient.from('transactions').update({ status: 'completed' }).eq('id', id);
+            const { data: w } = await supabaseClient.from('wallets').select('balance_usdt').eq('user_id', uid).single();
+            await supabaseClient.from('wallets').update({ balance_usdt: (w?.balance_usdt || 0) + amt }).eq('user_id', uid);
+            alert("تم الشحن!"); fetchD();
+        }
+        fetchD();
+    </script>
+</body>
+</html>
