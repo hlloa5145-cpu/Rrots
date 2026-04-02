@@ -1,23 +1,28 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إنشاء حساب - Rolex</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء حساب جديد - Rolex</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>body{background:#0d0221;color:white;font-family:sans-serif;}</style>
 </head>
 <body class="flex flex-col justify-center min-h-screen p-6">
-    <div class="max-w-md mx-auto w-full bg-[#1a0b3c]/50 p-8 rounded-[2rem] border border-purple-500/10 shadow-2xl">
-        <h1 class="text-3xl font-black text-center mb-8 text-purple-400">إنشاء حساب</h1>
-        <form id="regForm" class="space-y-4">
+    <div class="max-w-md mx-auto w-full bg-[#1a0b3c]/50 p-8 rounded-[2rem] border border-purple-500/10 shadow-2xl text-center">
+        <h1 class="text-3xl font-black mb-8 text-purple-400 italic">ROLEX INVEST</h1>
+        
+        <form id="regForm" class="space-y-4 text-right">
             <input type="email" id="email" placeholder="البريد الإلكتروني" class="w-full p-4 bg-[#0d0221] rounded-2xl border border-white/5 outline-none focus:border-purple-500" required>
             <input type="password" id="pass" placeholder="كلمة المرور" class="w-full p-4 bg-[#0d0221] rounded-2xl border border-white/5 outline-none focus:border-purple-500" required>
-            <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 p-5 rounded-2xl font-black shadow-xl mt-4 active:scale-95 transition-transform">تأكيد التسجيل ✨</button>
+            <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 p-5 rounded-2xl font-black shadow-xl mt-4 active:scale-95 transition-all">تأكيد التسجيل ✨</button>
         </form>
-        <p class="text-center mt-6 text-gray-500 text-sm">لديك حساب؟ <a href="login.html" class="text-purple-400 font-bold underline">سجل هنا</a></p>
+        
+        <p class="mt-6 text-gray-500 text-sm">لديك حساب بالفعل؟ <a href="login.html" class="text-purple-400 font-bold underline">سجل دخولك</a></p>
     </div>
+
     <script>
+        // إعدادات مشروعك
         const SB_URL = 'https://ddjpdiatyrgcdcjbvptn.supabase.co';
         const SB_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkanBkaWF0eXJnZGNqYnZwdHluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMTkwNzEsImV4cCI6MjA5MDY5NTA3MX0.YVdo6jmzyp3_AKEVD2L4RCqPr0AfDI6-mwkX0hhVKbg';
         const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
@@ -26,15 +31,24 @@
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('pass').value;
+
+            // 1. إنشاء الحساب في Auth
             const { data, error } = await supabaseClient.auth.signUp({ email, password });
             
-            if (error) return alert(error.message);
-            if (data.user) {
-                // إدخال البيانات في جدول profiles كما في صورتك
-                await supabaseClient.from('profiles').insert([{ id: data.user.id, email: email, uid: Math.floor(100000 + Math.random() * 900000) }]);
-                // إنشاء محفظة في جدول wallets
-                await supabaseClient.from('wallets').insert([{ user_id: data.user.id, balance_usdt: 0 }]);
-                alert("تم التسجيل بنجاح!"); window.location.href = 'login.html';
+            if (error) {
+                alert("خطأ في التسجيل: " + error.message);
+            } else if (data.user) {
+                // 2. إدخال البيانات في جدول profiles
+                await supabaseClient.from('profiles').insert([
+                    { id: data.user.id, email: email, uid: Math.floor(100000 + Math.random() * 900000) }
+                ]);
+                // 3. إنشاء محفظة برصيد صفر
+                await supabaseClient.from('wallets').insert([
+                    { user_id: data.user.id, balance_usdt: 0 }
+                ]);
+
+                alert("تم إنشاء الحساب بنجاح! سيتم تحويلك لصفحة الدخول.");
+                window.location.href = 'login.html';
             }
         };
     </script>
