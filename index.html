@@ -1,36 +1,33 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الرئيسية - Rolex</title>
+    <meta charset="UTF-8"><title>الرئيسية - Rolex</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>body{background:#0d0221;color:white;font-family:sans-serif;}</style>
 </head>
-<body class="p-6 pb-24">
-    <div class="flex justify-between items-center mb-6">
-        <div><h2 id="displayEmail" class="text-sm font-bold text-purple-400 italic">تحميل...</h2><span id="displayUid" class="text-[10px] text-gray-500">UID: --</span></div>
-        <button onclick="logout()" class="text-[10px] bg-red-500/10 text-red-500 px-3 py-1 rounded-lg border border-red-500/20">خروج</button>
+<body class="p-6">
+    <div id="userCard" class="bg-[#1a0b3c] p-6 rounded-3xl mb-6 border border-white/5 shadow-lg flex justify-between items-center">
+        <div>
+            <h2 id="displayEmail" class="font-bold text-sm text-purple-400 italic">تحميل...</h2>
+            <span id="displayUid" class="text-[10px] text-gray-500 mt-1 block">UID: --</span>
+        </div>
+        <button onclick="logout()" class="text-xs text-red-400 bg-red-400/10 px-3 py-1 rounded-lg border border-red-500/20">خروج</button>
     </div>
-    <div class="bg-gradient-to-br from-indigo-700 to-purple-800 p-10 rounded-[2.5rem] text-center shadow-2xl mb-8 relative overflow-hidden">
+    <div class="bg-gradient-to-br from-indigo-700 to-purple-800 p-10 rounded-[2.5rem] text-center shadow-2xl mb-8">
         <p class="text-white/60 text-xs font-bold mb-2">إجمالي الرصيد (USDT)</p>
-        <h1 class="text-6xl font-black tracking-tighter text-white">$<span id="balance">0.00</span></h1>
+        <h1 class="text-5xl font-black">$<span id="balance">0.00</span></h1>
     </div>
-    <div class="grid grid-cols-2 gap-4 mb-8">
-        <a href="deposit.html" class="bg-[#1a0b3c] p-6 rounded-3xl text-center border border-white/5">📦<br><span class="text-xs font-bold mt-2 block">إيداع</span></a>
-        <a href="withdraw.html" class="bg-[#1a0b3c] p-6 rounded-3xl text-center border border-white/5">💸<br><span class="text-xs font-bold mt-2 block">سحب</span></a>
-    </div>
-    <div class="fixed bottom-6 left-6 right-6 bg-[#1a0b3c]/80 backdrop-blur-lg p-4 rounded-[2rem] flex justify-around border border-white/5 shadow-2xl">
-        <a href="index.html" class="text-purple-400 text-xs font-bold">🏠 الرئيسية</a>
-        <a href="team.html" class="text-gray-500 text-xs font-bold">👥 الفريق</a>
-        <a href="kyc.html" class="text-gray-500 text-xs font-bold">🛡️ التوثيق</a>
+    <div class="grid grid-cols-2 gap-4">
+        <a href="deposit.html" class="bg-[#1a0b3c] p-6 rounded-3xl text-center border border-white/5 shadow-md">📦<br><span class="text-xs font-bold mt-2 block">إيداع</span></a>
+        <a href="withdraw.html" class="bg-[#1a0b3c] p-6 rounded-3xl text-center border border-white/5 shadow-md">💸<br><span class="text-xs font-bold mt-2 block">سحب</span></a>
     </div>
     <script>
         const supabaseClient = supabase.createClient('https://ddjpdiatyrgcdcjbvptn.supabase.co', 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkanBkaWF0eXJnZGNqYnZwdHluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMTkwNzEsImV4cCI6MjA5MDY5NTA3MX0.YVdo6jmzyp3_AKEVD2L4RCqPr0AfDI6-mwkX0hhVKbg');
         async function load() {
             const { data: { user } } = await supabaseClient.auth.getUser();
             if(!user) return window.location.href='login.html';
-            const { data: p } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+            const { data: p } = await supabaseClient.from('profiles').select('email, uid').eq('id', user.id).single();
             if(p) { document.getElementById('displayEmail').innerText = p.email; document.getElementById('displayUid').innerText = "UID: " + p.uid; }
             const { data: w } = await supabaseClient.from('wallets').select('balance_usdt').eq('user_id', user.id).single();
             if(w) document.getElementById('balance').innerText = w.balance_usdt.toFixed(2);
