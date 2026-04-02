@@ -1,33 +1,84 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8"><title>المدير - Rolex</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rolex Admin - الإدارة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>body{background:#050110;color:white;}</style>
+    <style>
+        body { background: #050110; color: white; font-family: sans-serif; }
+        .card { background: #1a0b3c; border: 1px solid rgba(255,255,255,0.05); }
+    </style>
 </head>
 <body class="p-6">
-    <h1 class="text-2xl font-black mb-8 text-yellow-500 italic">طلبات الإيداع المعلقة ⏳</h1>
-    <div id="list" class="space-y-4"></div>
+
+    <div class="flex justify-between items-center mb-10">
+        <h1 class="text-2xl font-black text-yellow-500 italic">لوحة تحكم المدير 👑</h1>
+        <span class="bg-yellow-500/10 text-yellow-500 px-4 py-1 rounded-full text-xs font-bold border border-yellow-500/20">الطلبات المعلقة</span>
+    </div>
+
+    <div id="depositRequests" class="space-y-4">
+        <p class="text-center text-gray-500 py-10">جاري تحميل الطلبات...</p>
+    </div>
+
     <script>
-        const supabaseClient = supabase.createClient('https://ddjpdiatyrgcdcjbvptn.supabase.co', 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkanBkaWF0eXJnZGNqYnZwdHluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMTkwNzEsImV4cCI6MjA5MDY5NTA3MX0.YVdo6jmzyp3_AKEVD2L4RCqPr0AfDI6-mwkX0hhVKbg');
-        async function fetchD() {
-            const { data } = await supabaseClient.from('transactions').select('*, profiles(email)').eq('status', 'pending').eq('type', 'deposit');
-            const container = document.getElementById('list'); container.innerHTML = '';
-            data.forEach(item => {
-                container.innerHTML += `<div class="bg-[#1a0b3c] p-6 rounded-3xl flex justify-between items-center shadow-lg border border-white/5">
-                    <div><p class="text-2xl font-black text-green-400">$${item.amount}</p><p class="text-[10px] text-gray-500">${item.profiles.email}</p></div>
-                    <button onclick="approve('${item.id}', '${item.user_id}', ${item.amount})" class="bg-green-600 px-6 py-2 rounded-xl font-bold">تأكيد ✅</button>
-                </div>`;
-            });
+        // إعدادات الربط مع Supabase الخاص بك
+        const SB_URL = 'https://ddjpdiatyrgcdcjbvptn.supabase.co';
+        const SB_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkanBkaWF0eXJnZGNqYnZwdHluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMTkwNzEsImV4cCI6MjA5MDY5NTA3MX0.YVdo6jmzyp3_AKEVD2L4RCqPr0AfDI6-mwkX0hhVKbg';
+        const supabase = supabase.createClient(SB_URL, SB_KEY);
+
+        async function fetchDeposits() {
+            // جلب العمليات المعلقة من جدول transactions مع إحضار إيميل المستخدم من جدول profiles
+            const { data, error } = await supabase
+                .from('transactions')
+                .select('*, profiles(email)')
+                .eq('type', 'deposit')
+                .eq('status', 'pending');
+
+            const container = document.getElementById('depositRequests');
+            container.innerHTML = '';
+
+            if (data && data.length > 0) {
+                data.forEach(item => {
+                    container.innerHTML += `
+                        <div class="card p-6 rounded-3xl flex justify-between items-center shadow-xl">
+                            <div>
+                                <p class="text-green-400 font-black text-2xl tracking-tighter">$${item.amount}</p>
+                                <p class="text-[10px] text-gray-400 mt-1">${item.profiles?.email || 'مستخدم غير معروف'}</p>
+                            </div>
+                            <button onclick="approveDeposit('${item.id}', '${item.user_id}', ${item.amount})" 
+                                    class="bg-green-600 hover:bg-green-500 px-6 py-3 rounded-2xl font-bold text-sm transition-all active:scale-90">
+                                تأكيد ✅
+                            </button>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML = '<div class="text-center text-gray-600 mt-20 italic">لا توجد طلبات إيداع بانتظارك حالياً</div>';
+            }
         }
-        async function approve(id, uid, amt) {
-            await supabaseClient.from('transactions').update({ status: 'completed' }).eq('id', id);
-            const { data: w } = await supabaseClient.from('wallets').select('balance_usdt').eq('user_id', uid).single();
-            await supabaseClient.from('wallets').update({ balance_usdt: (w?.balance_usdt || 0) + amt }).eq('user_id', uid);
-            alert("تم الشحن!"); fetchD();
+
+        async function approveDeposit(txId, userId, amount) {
+            try {
+                // 1. تحديث حالة المعاملة إلى مكتملة في جدول transactions
+                await supabase.from('transactions').update({ status: 'completed' }).eq('id', txId);
+
+                // 2. جلب الرصيد الحالي من جدول wallets
+                const { data: wallet } = await supabase.from('wallets').select('balance_usdt').eq('user_id', userId).single();
+                
+                // 3. إضافة المبلغ الجديد وتحديث جدول wallets
+                const newBalance = (wallet?.balance_usdt || 0) + amount;
+                await supabase.from('wallets').update({ balance_usdt: newBalance }).eq('user_id', userId);
+
+                alert("تم شحن الرصيد للمستخدم وتحديث المحفظة بنجاح! 🎉");
+                fetchDeposits();
+            } catch (err) {
+                alert("حدث خطأ أثناء التأكيد، تأكد من الصلاحيات.");
+            }
         }
-        fetchD();
+
+        fetchDeposits();
     </script>
 </body>
 </html>
